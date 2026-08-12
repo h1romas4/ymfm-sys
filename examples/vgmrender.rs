@@ -3,6 +3,8 @@
 //!
 //! Renders a VGM chip-command log to a 16-bit stereo WAV file using the
 //! `ymfm-sys` cxx bindings. Compressed (.vgz) files are not supported.
+//! Instead, use a pipe, for example:
+//! `gunzip -c example.vgz | vgmrender - -o example.wav`
 
 use std::cell::RefCell;
 use std::env;
