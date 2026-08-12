@@ -6,9 +6,8 @@ mod callback;
 
 pub use callback::{InterfaceCallbacks, InterfaceHandler};
 pub(crate) use callback::{
-    advance_clock, default_callbacks, read_data, read_pcm, seek_pcm, write_data,
-    ymfm_external_read, ymfm_external_write, ymfm_is_busy, ymfm_set_busy_end, ymfm_set_timer,
-    ymfm_update_irq,
+    advance_clock, default_callbacks, read_data, write_data, ymfm_external_read,
+    ymfm_external_write, ymfm_is_busy, ymfm_set_busy_end, ymfm_set_timer, ymfm_update_irq,
 };
 
 /// Convenience alias for the common case of holding a chip instance.
@@ -28,8 +27,6 @@ pub mod ffi {
             base: u32,
             length: u32,
         ) -> Vec<u8>;
-        fn read_pcm(callbacks: &InterfaceCallbacks) -> u8;
-        fn seek_pcm(callbacks: &InterfaceCallbacks, pos: u32);
         fn write_data(callbacks: &InterfaceCallbacks, access: AccessClass, base: u32, data: &[u8]);
         fn ymfm_external_read(
             callbacks: &InterfaceCallbacks,

@@ -42,10 +42,9 @@ impl ActiveChip {
         let chip = ffi::create_chip_with_callbacks(
             chip_type,
             clock,
-            Box::new(InterfaceCallbacks::new(vgm_handler_with_state(
-                Rc::clone(&state),
-                Rc::clone(&pcm_offset),
-            ))),
+            Box::new(InterfaceCallbacks::new(vgm_handler_with_state(Rc::clone(
+                &state,
+            )))),
         );
         let channels = chip.channels() as usize;
         let step: EmulatedTime = 0x1_0000_0000i64 / i64::from(chip.sample_rate());
@@ -937,10 +936,7 @@ fn read_byte(state: &VgmHandlerState, access: AccessClass, offset: u32) -> u8 {
 
 /// Create an `InterfaceHandler` that writes to a `VgmHandlerState`, matching
 /// vgmrender.cpp's `vgm_handler`.
-fn vgm_handler_with_state(
-    state: Rc<RefCell<VgmHandlerState>>,
-    pcm_offset: Rc<RefCell<u32>>,
-) -> InterfaceHandler {
+fn vgm_handler_with_state(state: Rc<RefCell<VgmHandlerState>>) -> InterfaceHandler {
     InterfaceHandler {
         write_data: Some(Box::new({
             let state = Rc::clone(&state);
@@ -958,22 +954,6 @@ fn vgm_handler_with_state(
                 (0..length)
                     .map(|index| read_byte(&state, access, base + index))
                     .collect()
-            }
-        })),
-        seek_pcm: Some(Box::new({
-            let pcm_offset = Rc::clone(&pcm_offset);
-            move |pos| {
-                *pcm_offset.borrow_mut() = pos;
-            }
-        })),
-        read_pcm: Some(Box::new({
-            let state = Rc::clone(&state);
-            let pcm_offset = Rc::clone(&pcm_offset);
-            move || {
-                let mut offset = pcm_offset.borrow_mut();
-                let value = read_byte(&state.borrow(), AccessClass::Pcm, *offset);
-                *offset = offset.saturating_add(1);
-                value
             }
         })),
         ..Default::default()

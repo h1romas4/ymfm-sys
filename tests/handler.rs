@@ -8,7 +8,6 @@ struct TestState {
     irq: Rc<RefCell<bool>>,
     busy: Rc<RefCell<bool>>,
     data: Rc<RefCell<[Vec<u8>; 4]>>,
-    pcm_offset: Rc<RefCell<u32>>,
     current_clock: Rc<RefCell<i64>>,
     busy_until: Rc<RefCell<i64>>,
     timers: Rc<RefCell<[i64; 2]>>,
@@ -19,7 +18,6 @@ fn handler() -> (InterfaceHandler, TestState) {
         irq: Rc::new(RefCell::new(false)),
         busy: Rc::new(RefCell::new(false)),
         data: Rc::new(RefCell::new(std::array::from_fn(|_| Vec::new()))),
-        pcm_offset: Rc::new(RefCell::new(0)),
         current_clock: Rc::new(RefCell::new(0)),
         busy_until: Rc::new(RefCell::new(0)),
         timers: Rc::new(RefCell::new([-1; 2])),
@@ -32,8 +30,6 @@ fn handler() -> (InterfaceHandler, TestState) {
     let read_data_state = state.clone();
     let external_write_state = state.clone();
     let write_data_state = state.clone();
-    let seek_state = state.clone();
-    let read_pcm_state = state.clone();
     let handler = InterfaceHandler {
         advance_clock: Some(Box::new(move |clocks| {
             let mut current = advance_state.current_clock.borrow_mut();
@@ -51,15 +47,6 @@ fn handler() -> (InterfaceHandler, TestState) {
         })),
         read_data: Some(Box::new(move |access, base, length| {
             read_bytes(&read_data_state, access, base, length)
-        })),
-        read_pcm: Some(Box::new(move || {
-            let mut offset = read_pcm_state.pcm_offset.borrow_mut();
-            let value = read_byte(&read_pcm_state, ffi::AccessClass::Pcm, *offset);
-            *offset = offset.saturating_add(1);
-            value
-        })),
-        seek_pcm: Some(Box::new(move |pos| {
-            *seek_state.pcm_offset.borrow_mut() = pos
         })),
         write_data: Some(Box::new(move |access, base, values| {
             for (index, value) in values.iter().copied().enumerate() {

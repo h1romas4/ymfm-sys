@@ -8,8 +8,6 @@ use crate::ffi;
 pub struct InterfaceHandler {
     pub advance_clock: Option<Box<dyn FnMut(i64) -> u8>>,
     pub read_data: Option<Box<dyn Fn(ffi::AccessClass, u32, u32) -> Vec<u8>>>,
-    pub read_pcm: Option<Box<dyn FnMut() -> u8>>,
-    pub seek_pcm: Option<Box<dyn FnMut(u32)>>,
     pub write_data: Option<Box<dyn FnMut(ffi::AccessClass, u32, &[u8])>>,
     pub ymfm_external_read: Option<Box<dyn FnMut(ffi::AccessClass, u32) -> u8>>,
     pub ymfm_external_write: Option<Box<dyn FnMut(ffi::AccessClass, u32, u8)>>,
@@ -117,19 +115,4 @@ pub(crate) fn write_data(
     if let Some(handler) = callbacks.handler.borrow_mut().write_data.as_mut() {
         handler(access, base, data);
     }
-}
-
-pub(crate) fn seek_pcm(callbacks: &InterfaceCallbacks, pos: u32) {
-    if let Some(handler) = callbacks.handler.borrow_mut().seek_pcm.as_mut() {
-        handler(pos);
-    }
-}
-
-pub(crate) fn read_pcm(callbacks: &InterfaceCallbacks) -> u8 {
-    callbacks
-        .handler
-        .borrow_mut()
-        .read_pcm
-        .as_mut()
-        .map_or(0, |handler| handler())
 }

@@ -84,8 +84,6 @@ separate user-controlled clocking step.
 | --- | --- | --- |
 | `advance_clock(clocks)` | Advance the host-side clock and return a bit mask of timers that expired during the interval. | Returns `0`. |
 | `read_data(access, base, length)` | Read a block of external ROM/RAM data for the selected [`AccessClass`](ffi::AccessClass). | Returns a zero-filled buffer of `length` bytes. |
-| `read_pcm()` | Read the next byte from the current PCM stream position. | Returns `0`. |
-| `seek_pcm(pos)` | Move the current PCM stream position. | Does nothing. |
 | `write_data(access, base, data)` | Write a block of external ROM/RAM data for the selected [`AccessClass`](ffi::AccessClass). | Does nothing. |
 | `ymfm_external_read(access, offset)` | Handle a single-byte read through ymfm's external interface. | Returns `0`. |
 | `ymfm_external_write(access, offset, data)` | Handle a single-byte write through ymfm's external interface. | Does nothing. |
