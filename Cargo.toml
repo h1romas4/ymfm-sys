@@ -2,7 +2,6 @@
 name = "ymfm-sys"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.97"
 description = "Rust bindings to the ymfm FM sound chip emulation library"
 license = "BSD-3-Clause"
 repository = "https://github.com/h1romas4/ymfm-sys"

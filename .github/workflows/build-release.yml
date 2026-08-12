@@ -27,8 +27,8 @@ jobs:
 
       - name: Rust Toolchain Setup
         run: |
-          rustup toolchain install 1.97 --profile minimal --no-self-update
-          rustup default 1.97
+          rustup toolchain install 1.97.1 --profile minimal --no-self-update
+          rustup default 1.97.1
 
       - name: Test
         run: |
