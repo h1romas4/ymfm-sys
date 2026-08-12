@@ -105,9 +105,14 @@ The crate builds the bundled C++ implementation through `build.rs`, so a Rust
 toolchain and a C++17-compatible compiler are required.
 
 ```sh
+git clone --recurse-submodules https://github.com/h1romas4/ymfm-sys.git
+cd ymfm-sys
+```
+
+```sh
 cargo build
 cargo test
-cargo doc --open
+cargo doc --open --no-deps
 ```
 
 The `components/ymfm` directory contains the upstream ymfm source used by the
