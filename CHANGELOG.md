@@ -1,0 +1,9 @@
+# Changelog
+
+## [Unreleased]
+
+- [ ] Support the `wasm32-unknown-unknown` target.
+
+## [0.1.0] - 2026-08-12
+
+Initial release.
