@@ -112,6 +112,11 @@ The `components/ymfm` directory contains the upstream ymfm source used by the
 build. The C++ implementation is compiled as part of this crate and does not
 need to be installed separately.
 
+The following targets are not supported yet (WIP):
+
+- `wasm32-unknown-unknown` ([`wasm32-unknown-unknown-libcxx`](https://github.com/maximmaxim345/wasm32-unknown-unknown-libcxx))
+- `wasm32-wasip2` (Component Model)
+
 ## Upstream
 
 The bundled ymfm source is pinned to commit
