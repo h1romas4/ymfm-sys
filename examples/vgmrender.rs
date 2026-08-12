@@ -7,7 +7,7 @@
 use std::cell::RefCell;
 use std::env;
 use std::fs;
-use std::io::{self, BufWriter, Write};
+use std::io::{self, BufWriter, Read, Write};
 use std::path::Path;
 use std::process::ExitCode;
 use std::rc::Rc;
@@ -1027,7 +1027,8 @@ fn write_wav(path: &Path, output_rate: u32, wav_buffer: &[i32]) -> io::Result<()
 
 /// Print usage information to stderr.
 fn print_usage() {
-    eprintln!("Usage: vgmrender <inputfile> -o <outputfile> [-r <rate>]");
+    eprintln!("Usage: vgmrender <inputfile|-> -o <outputfile> [-r <rate>]");
+    eprintln!("       Use '-' as <inputfile> to read VGM data from stdin.");
 }
 
 fn main() -> ExitCode {
@@ -1050,6 +1051,7 @@ fn main() -> ExitCode {
                 i += 1;
                 output_rate = args.get(i).and_then(|s| s.parse().ok()).unwrap_or(44100);
             }
+            "-" => input_file = Some(arg.to_string()),
             _ if arg.starts_with('-') => {
                 eprintln!("Unknown argument: {arg}");
                 arg_error = true;
@@ -1068,11 +1070,23 @@ fn main() -> ExitCode {
         return ExitCode::from(1);
     }
 
-    let buffer = match fs::read(&input_file) {
-        Ok(buffer) => buffer,
-        Err(err) => {
-            eprintln!("Error opening file '{input_file}': {err}");
-            return ExitCode::from(2);
+    let buffer = if input_file == "-" {
+        let mut stdin = io::stdin();
+        let mut buffer = Vec::new();
+        match stdin.read_to_end(&mut buffer) {
+            Ok(_) => buffer,
+            Err(err) => {
+                eprintln!("Error reading VGM data from stdin: {err}");
+                return ExitCode::from(2);
+            }
+        }
+    } else {
+        match fs::read(&input_file) {
+            Ok(buffer) => buffer,
+            Err(err) => {
+                eprintln!("Error opening file '{input_file}': {err}");
+                return ExitCode::from(2);
+            }
         }
     };
 
