@@ -1,11 +1,11 @@
 # ymfm-sys
 
-Low-level Rust bindings to [ymfm](https://github.com/aaronsgiles/ymfm), by Aaron Giles-san
+Rust bindings to [ymfm](https://github.com/aaronsgiles/ymfm), by Aaron Giles-san
 (BSD 3-Clause License), a portable C++ library for emulating Yamaha FM and related
 sound chips.
 
-This is not a complete raw binding to ymfm's C++ API; it is a low-level
-adapter that makes the relevant chip interfaces usable from Rust.
+This is not a complete raw binding to ymfm's C++ API; it is an adapter that
+makes the relevant chip interfaces usable from Rust.
 
 This crate exposes ymfm's per-chip interface through a small C++ shim and
 [`cxx`](https://cxx.rs/). It is intended for emulator authors and other Rust
@@ -24,7 +24,7 @@ The public API is under the [`ffi`] module:
 | [`channels(&self)`](ffi::Chip::channels) | Return the number of output channels per native sample. | Use this to size interleaved output buffers. |
 | [`sample_rate(&self)`](ffi::Chip::sample_rate) | Return the chip's native output sample rate. | Depends on the input clock and, where supported, fidelity setting. |
 | [`write(&mut self, offset: u32, data: u8)`](ffi::Chip::write) and [`read(&self, offset: u32)`](ffi::Chip::read) | Access the chip's register and status ports directly. | Port layout is chip-specific and follows ymfm. |
-| [`generate(&mut self, buffer: &mut [i32])`](ffi::Chip::generate) | Generate interleaved signed 32-bit samples at the chip's native rate. | A high-level API that generates one sample at a time and advances timers and the internal clock for each sample. |
+| [`generate(&mut self, buffer: &mut [i32])`](ffi::Chip::generate) | Generate interleaved signed 32-bit samples at the chip's native rate. | Generates one sample at a time and advances timers and the internal clock for each sample. |
 | [`reset(&mut self)`](ffi::Chip::reset) | Reset the emulated chip state. | Restores the chip to its post-power-on state. |
 | [`save_state(&mut self)`](ffi::Chip::save_state) and [`restore_state(&mut self, data: &[u8])`](ffi::Chip::restore_state) | Serialize and restore the emulated state. | Use with the same chip type and input clock. |
 | [`set_fidelity(&mut self, fidelity: Fidelity)`](ffi::Chip::set_fidelity) | Select the accuracy/speed tradeoff. | Applies to OPN-family chips that support ymfm's `opn_fidelity`; it is a no-op for other chip types. |
