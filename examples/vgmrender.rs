@@ -956,6 +956,10 @@ fn vgm_handler_with_state(state: Rc<RefCell<VgmHandlerState>>) -> InterfaceHandl
                     .collect()
             }
         })),
+        ymfm_external_read: Some(Box::new({
+            let state = Rc::clone(&state);
+            move |access, offset| read_byte(&state.borrow(), access, offset)
+        })),
         ..Default::default()
     }
 }
