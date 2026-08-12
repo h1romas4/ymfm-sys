@@ -146,9 +146,9 @@ pub mod ffi {
 
         /// Generate `buffer.len() / channels()` samples at the chip's native
         /// sample rate, overwriting `buffer` (channel-interleaved); wraps
-        /// the ymfm `generate(output_data*, numsamples)` API. This is a
-        /// Generates one native sample at a time. For each sample, it also
-        /// advances the internal clock counter used by
+        /// the ymfm `generate(output_data*, numsamples)` API. This generates
+        /// one native sample at a time. For each sample, it also advances the
+        /// internal clock counter used by
         /// timers, including those required by modes such as CSM, and by
         /// BUSY state tracking.
         fn generate(self: Pin<&mut Chip>, buffer: &mut [i32]);
