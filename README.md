@@ -85,8 +85,8 @@ separate user-controlled clocking step.
 | `advance_clock(clocks)` | Advance the host-side clock and return a bit mask of timers that expired during the interval. | Returns `0`. |
 | `read_data(access, base, length)` | Read a block of external ROM/RAM data for the selected [`AccessClass`](ffi::AccessClass). | Returns a zero-filled buffer of `length` bytes. |
 | `write_data(access, base, data)` | Write a block of external ROM/RAM data for the selected [`AccessClass`](ffi::AccessClass). | Does nothing. |
-| `ymfm_external_read(access, offset)` | Handle a single-byte read through ymfm's external interface. | Returns `0`. |
-| `ymfm_external_write(access, offset, data)` | Handle a single-byte write through ymfm's external interface. | Does nothing. |
+| `ymfm_external_read(access, offset)` | Return one byte when ymfm reads external chip memory or I/O during emulation, such as ADPCM or PCM data. | Returns `0`. |
+| `ymfm_external_write(access, offset, data)` | Receive one byte when ymfm writes external chip memory or I/O during emulation, such as RAM or device-port output. | Does nothing. |
 | `ymfm_is_busy()` | Report whether the emulated device is currently BUSY. | Returns `false`. |
 | `ymfm_set_busy_end(clocks)` | Set or extend the BUSY period in chip clocks. | Does nothing. |
 | `ymfm_set_timer(tnum, duration_in_clocks)` | Receive a timer number and its duration, allowing the host to schedule expiry. | Does nothing. |
