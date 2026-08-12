@@ -1,5 +1,7 @@
 # ymfm-sys
 
+![](https://github.com/h1romas4/ymfm-sys/workflows/Build/badge.svg)
+
 Rust bindings to [ymfm](https://github.com/aaronsgiles/ymfm), by Aaron Giles-san
 (BSD 3-Clause License), a portable C++ library for emulating Yamaha FM and related
 sound chips.
