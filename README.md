@@ -1,7 +1,8 @@
 # ymfm-sys
 
-Low-level Rust bindings to [ymfm](https://github.com/aaronsgiles/ymfm)(BSD 3-Clause License), a
-portable C++ library for emulating Yamaha FM and related sound chips.
+Low-level Rust bindings to [ymfm](https://github.com/aaronsgiles/ymfm), by Aaron Giles-san
+(BSD 3-Clause License), a portable C++ library for emulating Yamaha FM and related
+sound chips.
 
 This is not a complete raw binding to ymfm's C++ API; it is a low-level
 adapter that makes the relevant chip interfaces usable from Rust.
@@ -110,6 +111,11 @@ cargo doc --open
 The `components/ymfm` directory contains the upstream ymfm source used by the
 build. The C++ implementation is compiled as part of this crate and does not
 need to be installed separately.
+
+## Upstream
+
+The bundled ymfm source is pinned to commit
+[`81aec25ccbb98f4873a255f7551ac4dadac59b4a`](https://github.com/aaronsgiles/ymfm/commit/81aec25ccbb98f4873a255f7551ac4dadac59b4a).
 
 ## License
 
