@@ -2,15 +2,19 @@ use std::cell::RefCell;
 
 use crate::ffi;
 
+pub type ReadDataHandler = Box<dyn Fn(ffi::AccessClass, u32, u32) -> Vec<u8>>;
+pub type WriteDataHandler = Box<dyn FnMut(ffi::AccessClass, u32, &[u8])>;
+pub type ExternalWriteHandler = Box<dyn FnMut(ffi::AccessClass, u32, u8)>;
+
 /// User-provided ymfm interface handlers. Each callback is optional; omitted
 /// callbacks use the corresponding no-op/default behavior.
 #[derive(Default)]
 pub struct InterfaceHandler {
     pub advance_clock: Option<Box<dyn FnMut(i64) -> u8>>,
-    pub read_data: Option<Box<dyn Fn(ffi::AccessClass, u32, u32) -> Vec<u8>>>,
-    pub write_data: Option<Box<dyn FnMut(ffi::AccessClass, u32, &[u8])>>,
+    pub read_data: Option<ReadDataHandler>,
+    pub write_data: Option<WriteDataHandler>,
     pub ymfm_external_read: Option<Box<dyn FnMut(ffi::AccessClass, u32) -> u8>>,
-    pub ymfm_external_write: Option<Box<dyn FnMut(ffi::AccessClass, u32, u8)>>,
+    pub ymfm_external_write: Option<ExternalWriteHandler>,
     pub ymfm_is_busy: Option<Box<dyn Fn() -> bool>>,
     pub ymfm_set_busy_end: Option<Box<dyn FnMut(u32)>>,
     pub ymfm_set_timer: Option<Box<dyn FnMut(u32, i32)>>,
@@ -69,7 +73,7 @@ pub(crate) fn ymfm_is_busy(callbacks: &InterfaceCallbacks) -> bool {
         .borrow()
         .ymfm_is_busy
         .as_ref()
-        .map_or(false, |handler| handler())
+        .is_some_and(|handler| handler())
 }
 
 /// Forward a timer number and duration to the host callback, if configured.

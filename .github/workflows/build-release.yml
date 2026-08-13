@@ -30,14 +30,17 @@ jobs:
           rustup toolchain install 1.97.1 --profile minimal --no-self-update
           rustup default 1.97.1
 
+      - name: Format
+        run: cargo fmt --all -- --check
+
       - name: Test
-        run: |
-          cargo test
+        run: cargo test --all-targets
 
       - name: Test (rustdoc)
-        run: |
-          cargo test --doc
+        run: cargo test --doc
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Compile
-        run: |
-          cargo build --release
+        run: cargo build --release
