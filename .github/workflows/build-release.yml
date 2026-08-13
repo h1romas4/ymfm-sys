@@ -42,6 +42,7 @@ jobs:
       - name: Rust Toolchain Setup
         run: |
           rustup toolchain install ${{ env.RUST_TOOLCHAIN }} --profile minimal --no-self-update
+          rustup component add rustfmt clippy --toolchain ${{ env.RUST_TOOLCHAIN }}
           rustup default ${{ env.RUST_TOOLCHAIN }}
 
       - name: Format
