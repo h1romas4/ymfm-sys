@@ -58,4 +58,20 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Compile
-        run: cargo build --release
+        run: cargo build --release --all-targets
+
+      - name: Verify vgmrender (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          test -f target/release/examples/vgmrender
+          ls -l target/release/examples/vgmrender
+
+      - name: Verify vgmrender (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $path = "target/release/examples/vgmrender.exe"
+          if (-not (Test-Path -Path $path -PathType Leaf)) {
+            throw "Expected example executable was not found: $path"
+          }
+          Get-Item $path | Select-Object FullName, Length, LastWriteTime
