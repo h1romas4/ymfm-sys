@@ -30,7 +30,10 @@ fn main() {
     // vendored ymfm sources: silence third-party warnings, built separately
     // so our own code above still gets full warnings
     let mut ymfm = cc::Build::new();
-    ymfm.cpp(true).include(ymfm_src).std("c++14").warnings(false);
+    ymfm.cpp(true)
+        .include(ymfm_src)
+        .std("c++14")
+        .warnings(false);
     for source in ymfm_sources {
         ymfm.file(ymfm_src.join(source));
     }
