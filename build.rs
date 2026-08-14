@@ -22,14 +22,14 @@ fn main() {
     cxx_build::bridge("src/lib.rs")
         .file("src/shim.cpp")
         .include(ymfm_src)
-        .std("c++17")
+        .std("c++14")
         .flag_if_supported("-Wno-unused-parameter")
         .compile("ymfm-sys");
 
     // vendored ymfm sources: silence third-party warnings, built separately
     // so our own code above still gets full warnings
     let mut ymfm = cc::Build::new();
-    ymfm.include(ymfm_src).std("c++17").warnings(false);
+    ymfm.include(ymfm_src).std("c++14").warnings(false);
     for source in ymfm_sources {
         ymfm.file(ymfm_src.join(source));
     }

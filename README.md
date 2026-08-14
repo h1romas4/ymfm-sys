@@ -103,7 +103,7 @@ shim when implementing those operations.
 ## Building
 
 The crate builds the bundled C++ implementation through `build.rs`, so a Rust
-toolchain and a C++17-compatible compiler are required.
+toolchain and a C++14-compatible compiler are required.
 
 ```sh
 git clone --recurse-submodules https://github.com/h1romas4/ymfm-sys.git
