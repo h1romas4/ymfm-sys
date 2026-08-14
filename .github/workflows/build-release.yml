@@ -24,22 +24,22 @@ jobs:
           - name: ubuntu-26.04
             os: ubuntu-26.04
             cargo_args: ""
-            run_tests: true
+            wasi: false
           # Ubuntu 26.04 (wasm32-wasip1)
           - name: ubuntu-26.04-wasm32-wasip1
             os: ubuntu-26.04
             cargo_args: "--target wasm32-wasip1"
-            run_tests: false
+            wasi: true
           # Windows Server 2025 (x86_64-pc-windows-msvc)
           - name: windows-2025
             os: windows-2025
             cargo_args: ""
-            run_tests: true
+            wasi: false
           # macOS Sequoia 15 (aarch64-apple-darwin)
           - name: macos-15
             os: macos-15
             cargo_args: ""
-            run_tests: true
+            wasi: false
     steps:
       - uses: actions/checkout@v5
         with:
@@ -61,12 +61,12 @@ jobs:
           rustup default ${{ env.RUST_TOOLCHAIN }}
 
       - name: WASI Rust Target Setup
-        if: matrix.run_tests == false
+        if: matrix.wasi
         shell: bash
         run: rustup target add wasm32-wasip1 --toolchain ${{ env.RUST_TOOLCHAIN }}
 
       - name: WASI SDK Cache
-        if: matrix.run_tests == false
+        if: matrix.wasi
         uses: actions/cache@v5
         id: wasi-sdk-cache
         with:
@@ -74,7 +74,7 @@ jobs:
           key: ${{ runner.os }}-wasi-sdk-${{ env.WASI_SDK_VERSION }}-x86_64-linux
 
       - name: WASI SDK Setup
-        if: matrix.run_tests == false
+        if: matrix.wasi
         run: |
           wasi_sdk="$GITHUB_WORKSPACE/wasi-sdk-${WASI_SDK_VERSION}"
           if [ ! -d "$wasi_sdk" ]; then
@@ -83,7 +83,8 @@ jobs:
               --output "$archive" \
               "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_VERSION}/wasi-sdk-${WASI_SDK_VERSION}.0-x86_64-linux.tar.gz"
             tar -xzf "$archive" -C "$RUNNER_TEMP"
-            mv "$RUNNER_TEMP/wasi-sdk-${WASI_SDK_VERSION}.0" "$wasi_sdk"
+            extracted_dir=$(tar -tzf "$archive" | head -1 | cut -d/ -f1)
+            mv "$RUNNER_TEMP/$extracted_dir" "$wasi_sdk"
           fi
           echo "WASI_SDK=$wasi_sdk" >> "$GITHUB_ENV"
           echo "CXX_wasm32_wasip1=$wasi_sdk/bin/clang++" >> "$GITHUB_ENV"
@@ -95,11 +96,11 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Test
-        if: matrix.run_tests
+        if: matrix.wasi == false
         run: cargo test --all-targets
 
       - name: Test (rustdoc)
-        if: matrix.run_tests
+        if: matrix.wasi == false
         run: cargo test --doc
 
       - name: Clippy
@@ -109,7 +110,7 @@ jobs:
         run: cargo build --release --all-targets ${{ matrix.cargo_args }}
 
       - name: Verify vgmrender (Unix)
-        if: runner.os != 'Windows' && matrix.run_tests
+        if: runner.os != 'Windows' && matrix.wasi == false
         run: |
           test -f target/release/examples/vgmrender
           ls -l target/release/examples/vgmrender
