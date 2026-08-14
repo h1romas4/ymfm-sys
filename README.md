@@ -120,10 +120,30 @@ The `components/ymfm` directory contains the upstream ymfm source used by the
 build. The C++ implementation is compiled as part of this crate and does not
 need to be installed separately.
 
-The following targets are not supported yet (WIP):
+### wasm32-wasip1
 
-- `wasm32-unknown-unknown` ([`wasm32-unknown-unknown-libcxx`](https://github.com/maximmaxim345/wasm32-unknown-unknown-libcxx))
-- `wasm32-wasip2` (Component Model)
+Install the Rust target and the [WASI SDK](https://github.com/WebAssembly/wasi-sdk/releases),
+then configure the target-specific C++ compiler, compiler flags, and linker:
+
+```sh
+rustup target add wasm32-wasip1
+export WASI_SDK=/path/to/wasi_sdk
+export CXX_wasm32_wasip1="$WASI_SDK/bin/clang++"
+export CXXFLAGS_wasm32_wasip1="--target=wasm32-wasip1 --sysroot=$WASI_SDK/share/wasi-sysroot -fno-exceptions"
+export CARGO_TARGET_WASM32_WASIP1_LINKER="$WASI_SDK/bin/clang"
+export CARGO_TARGET_WASM32_WASIP1_RUSTFLAGS="-C link-arg=--sysroot=$WASI_SDK/share/wasi-sysroot -C link-arg=-lc++ -C link-arg=-lc++abi"
+```
+
+Build with:
+
+```sh
+cargo build --target wasm32-wasip1
+```
+
+### Unsupported targets
+
+- `wasm32-unknown-unknown` (see [`wasm32-unknown-unknown-libcxx`](https://github.com/maximmaxim345/wasm32-unknown-unknown-libcxx))
+- `wasm32-wasip2` (Component Model support is not available yet)
 
 ## Upstream
 

@@ -1,3 +1,4 @@
+use std::env;
 use std::path::Path;
 
 fn main() {
@@ -29,11 +30,20 @@ fn main() {
     // vendored ymfm sources: silence third-party warnings, built separately
     // so our own code above still gets full warnings
     let mut ymfm = cc::Build::new();
-    ymfm.include(ymfm_src).std("c++14").warnings(false);
+    ymfm.cpp(true).include(ymfm_src).std("c++14").warnings(false);
     for source in ymfm_sources {
         ymfm.file(ymfm_src.join(source));
     }
     ymfm.compile("ymfm-vendor");
+
+    let target = env::var("TARGET").expect("TARGET is not set by Cargo");
+    let target_env = target.replace('-', "_");
+    println!("cargo:rerun-if-env-changed=CXX_{target_env}");
+    println!("cargo:rerun-if-env-changed=CXXFLAGS_{target_env}");
+    println!(
+        "cargo:rerun-if-env-changed=CARGO_TARGET_{}_LINKER",
+        target_env.to_uppercase()
+    );
 
     println!("cargo:rerun-if-changed=src/lib.rs");
     println!("cargo:rerun-if-changed=src/shim.h");

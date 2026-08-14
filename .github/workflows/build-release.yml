@@ -10,21 +10,36 @@ on:
 
 env:
   RUST_TOOLCHAIN: 1.97.1
+  WASI_SDK_VERSION: 33
 
 jobs:
   build:
-    name: Build (${{ matrix.os }})
+    name: Build (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           # Ubuntu 26.04 (x86_64-unknown-linux-gnu)
-          - os: ubuntu-26.04
+          - name: ubuntu-26.04
+            os: ubuntu-26.04
+            cargo_args: ""
+            run_tests: true
+          # Ubuntu 26.04 (wasm32-wasip1)
+          - name: ubuntu-26.04-wasm32-wasip1
+            os: ubuntu-26.04
+            cargo_args: "--target wasm32-wasip1"
+            run_tests: false
           # Windows Server 2025 (x86_64-pc-windows-msvc)
-          - os: windows-2025
+          - name: windows-2025
+            os: windows-2025
+            cargo_args: ""
+            run_tests: true
           # macOS Sequoia 15 (aarch64-apple-darwin)
-          - os: macos-15
+          - name: macos-15
+            os: macos-15
+            cargo_args: ""
+            run_tests: true
     steps:
       - uses: actions/checkout@v5
         with:
@@ -45,23 +60,56 @@ jobs:
           rustup component add rustfmt clippy --toolchain ${{ env.RUST_TOOLCHAIN }}
           rustup default ${{ env.RUST_TOOLCHAIN }}
 
+      - name: WASI Rust Target Setup
+        if: matrix.run_tests == false
+        shell: bash
+        run: rustup target add wasm32-wasip1 --toolchain ${{ env.RUST_TOOLCHAIN }}
+
+      - name: WASI SDK Cache
+        if: matrix.run_tests == false
+        uses: actions/cache@v5
+        id: wasi-sdk-cache
+        with:
+          path: wasi-sdk-${{ env.WASI_SDK_VERSION }}
+          key: ${{ runner.os }}-wasi-sdk-${{ env.WASI_SDK_VERSION }}-x86_64-linux
+
+      - name: WASI SDK Setup
+        if: matrix.run_tests == false
+        run: |
+          wasi_sdk="$GITHUB_WORKSPACE/wasi-sdk-${WASI_SDK_VERSION}"
+          if [ ! -d "$wasi_sdk" ]; then
+            archive="$RUNNER_TEMP/wasi-sdk.tar.gz"
+            curl --fail --location --silent --show-error \
+              --output "$archive" \
+              "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_SDK_VERSION}/wasi-sdk-${WASI_SDK_VERSION}.0-x86_64-linux.tar.gz"
+            tar -xzf "$archive" -C "$RUNNER_TEMP"
+            mv "$RUNNER_TEMP/wasi-sdk-${WASI_SDK_VERSION}.0" "$wasi_sdk"
+          fi
+          echo "WASI_SDK=$wasi_sdk" >> "$GITHUB_ENV"
+          echo "CXX_wasm32_wasip1=$wasi_sdk/bin/clang++" >> "$GITHUB_ENV"
+          echo "CXXFLAGS_wasm32_wasip1=--target=wasm32-wasip1 --sysroot=$wasi_sdk/share/wasi-sysroot -fno-exceptions" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_WASM32_WASIP1_LINKER=$wasi_sdk/bin/clang" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_WASM32_WASIP1_RUSTFLAGS=-C link-arg=--sysroot=$wasi_sdk/share/wasi-sysroot -C link-arg=-lc++ -C link-arg=-lc++abi" >> "$GITHUB_ENV"
+
       - name: Format
         run: cargo fmt --all -- --check
 
       - name: Test
+        if: matrix.run_tests
         run: cargo test --all-targets
 
       - name: Test (rustdoc)
+        if: matrix.run_tests
         run: cargo test --doc
 
       - name: Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy ${{ matrix.cargo_args }} --all-targets --all-features -- -D warnings
 
       - name: Compile
-        run: cargo build --release --all-targets
+        run: cargo build --release --all-targets ${{ matrix.cargo_args }}
 
       - name: Verify vgmrender (Unix)
-        if: runner.os != 'Windows'
+        if: runner.os != 'Windows' && matrix.run_tests
         run: |
           test -f target/release/examples/vgmrender
           ls -l target/release/examples/vgmrender
