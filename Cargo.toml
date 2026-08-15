@@ -5,11 +5,12 @@ edition = "2024"
 description = "Rust bindings to the ymfm FM sound chip emulation library"
 license = "BSD-3-Clause"
 authors = ["h1romas4 <h1romas4@gmail.com>"]
-homepage = "https://github.com/h1romas4"
+homepage = "https://github.com/h1romas4/ymfm-sys"
 repository = "https://github.com/h1romas4/ymfm-sys"
 documentation = "https://docs.rs/ymfm-sys"
 readme = "README.md"
 keywords = ["vgm", "sound", "audio"]
+categories = ["emulators", "multimedia::audio"]
 exclude = [
 	".github",
 	".gitmodules",
