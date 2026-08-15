@@ -18,7 +18,7 @@ exclude = [
 ]
 
 [dependencies]
-cxx = "1.0.198"
+cxx = "1"
 
 [build-dependencies]
 cc = "1.4.2"
