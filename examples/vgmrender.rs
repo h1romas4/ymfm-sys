@@ -7,6 +7,7 @@
 //! `gunzip -c example.vgz | vgmrender - -o example.wav`
 //! Use `-o -` to write the WAV stream to stdout, for example:
 //! `gunzip -c example.vgz | vgmrender - -o - | ffplay -`
+//! The WAV stream is written after rendering is complete.
 
 use std::cell::RefCell;
 use std::env;
