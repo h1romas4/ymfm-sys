@@ -5,6 +5,8 @@
 //! `ymfm-sys` cxx bindings. Compressed (.vgz) files are not supported.
 //! Instead, use a pipe, for example:
 //! `gunzip -c example.vgz | vgmrender - -o example.wav`
+//! Use `-o -` to write the WAV stream to stdout, for example:
+//! `gunzip -c example.vgz | vgmrender - -o - | ffplay -`
 
 use std::cell::RefCell;
 use std::env;
@@ -189,7 +191,7 @@ fn write_chip(chips: &mut [ActiveChip], category: ChipType, index: u8, reg: u32,
 fn add_chips(chips: &mut Vec<ActiveChip>, chip_type: ChipType, clock: u32, name: &str) {
     let clock_value = clock & 0x3fff_ffff;
     let num_chips = if clock & 0x4000_0000 != 0 { 2 } else { 1 };
-    println!(
+    eprintln!(
         "Adding {}{} @ {}Hz",
         if num_chips == 2 { "2 x " } else { "" },
         name,
@@ -969,7 +971,7 @@ fn vgm_handler_with_state(state: Rc<RefCell<VgmHandlerState>>) -> InterfaceHandl
 /// Write a 16-bit stereo WAV file from interleaved (L, R) i32 samples,
 /// matching vgmrender.cpp's `write_wav` (samples are normalized so the
 /// loudest one hits roughly 80% of full scale).
-fn write_wav(path: &Path, output_rate: u32, wav_buffer: &[i32]) -> io::Result<()> {
+fn write_wav(path: &str, output_rate: u32, wav_buffer: &[i32]) -> io::Result<()> {
     let max_scale = wav_buffer
         .iter()
         .map(|v| v.unsigned_abs())
@@ -987,7 +989,12 @@ fn write_wav(path: &Path, output_rate: u32, wav_buffer: &[i32]) -> io::Result<()
         .map(|&v| (i64::from(v) * 26000 / i64::from(max_scale)) as i16)
         .collect();
 
-    let mut out = BufWriter::new(fs::File::create(path)?);
+    let output: Box<dyn Write> = if path == "-" {
+        Box::new(io::stdout())
+    } else {
+        Box::new(fs::File::create(Path::new(path))?)
+    };
+    let mut out = BufWriter::new(output);
     let data_len = (samples.len() * 2) as u32;
     let total_size = 40u32 + data_len;
     let byte_rate = output_rate * 2 * 2;
@@ -1015,6 +1022,7 @@ fn write_wav(path: &Path, output_rate: u32, wav_buffer: &[i32]) -> io::Result<()
 fn print_usage() {
     eprintln!("Usage: vgmrender <inputfile|-> -o <outputfile> [-r <rate>]");
     eprintln!("       Use '-' as <inputfile> to read VGM data from stdin.");
+    eprintln!("       Use '-' as <outputfile> to write WAV data to stdout.");
 }
 
 fn main() -> ExitCode {
@@ -1090,7 +1098,7 @@ fn main() -> ExitCode {
 
     let wav_buffer = generate_all(&buffer, data_start, output_rate, &mut chips);
 
-    if let Err(err) = write_wav(Path::new(&output_file), output_rate, &wav_buffer) {
+    if let Err(err) = write_wav(&output_file, output_rate, &wav_buffer) {
         eprintln!("Error writing output file '{output_file}': {err}");
         return ExitCode::from(6);
     }
