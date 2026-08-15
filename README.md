@@ -1,6 +1,6 @@
 # ymfm-sys
 
-[![Build](https://github.com/h1romas4/ymfm-sys/workflows/Build/badge.svg)](https://github.com/h1romas4/ymfm-sys/actions/workflows/build.yml)
+[![Build](https://github.com/h1romas4/ymfm-sys/workflows/Build/badge.svg?branch=v0.1.0)](https://github.com/h1romas4/ymfm-sys/actions/workflows/build.yml?query=branch%3Av0.1.0)
 [![Crates.io](https://img.shields.io/crates/v/ymfm-sys.svg)](https://crates.io/crates/ymfm-sys)
 
 Rust bindings to [ymfm](https://github.com/aaronsgiles/ymfm), by Aaron Giles-san
