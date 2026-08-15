@@ -412,7 +412,7 @@ fn parse_header(buffer: &[u8]) -> (u32, Vec<ActiveChip>) {
     let volume_info = next_field!();
     if volume_info & 0xff != 0 {
         let modifier = 2f64.powf(f64::from(volume_info & 0xff) / 0x20 as f64);
-        println!(
+        eprintln!(
             "Volume modifier: {:02X} (={})",
             volume_info & 0xff,
             modifier as i32
@@ -817,9 +817,9 @@ fn generate_all(
 
                         other => {
                             if (0x40..0x7f).contains(&other) {
-                                println!("Compressed data block not supported");
+                                eprintln!("Compressed data block not supported");
                             } else {
-                                println!("Unknown data block type {other:#04X}");
+                                eprintln!("Unknown data block type {other:#04X}");
                             }
                         }
                     }
@@ -828,7 +828,7 @@ fn generate_all(
             }
 
             // PCM RAM write
-            0x68 => println!("68: PCM RAM write"),
+            0x68 => eprintln!("68: PCM RAM write"),
 
             // AY8910, write value dd to register aa
             0xa0 => {
