@@ -98,6 +98,32 @@ fn generate_leaves_incomplete_trailing_frame_untouched() {
 }
 
 #[test]
+fn opl_and_opn_extended_ports_follow_chip_specific_mapping() {
+    for chip_type in [
+        ffi::ChipType::Ym2608,
+        ffi::ChipType::Ym2610,
+        ffi::ChipType::Ymf288,
+    ] {
+        let mut chip = ffi::create_chip(chip_type, 8_000_000);
+
+        chip.pin_mut().write(2, 0x00);
+        chip.pin_mut().write(3, 0x00);
+        let _extended_status = chip.pin_mut().read(2);
+        let _extended_data = chip.pin_mut().read(3);
+    }
+
+    // YMF262/YMF289B use offset 2 for the upper address but offset 3 for
+    // regular data, unlike the OPN/OPNA extended data port mapping.
+    for chip_type in [ffi::ChipType::Ymf262, ffi::ChipType::Ymf289B] {
+        let mut chip = ffi::create_chip(chip_type, 8_000_000);
+
+        chip.pin_mut().write(2, 0x05);
+        chip.pin_mut().write(3, 0x01);
+        let _status = chip.pin_mut().read(0);
+    }
+}
+
+#[test]
 fn all_chip_types_support_basic_lifecycle_operations() {
     let chip_types = [
         ffi::ChipType::Ym2149,
