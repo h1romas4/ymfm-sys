@@ -1,6 +1,6 @@
 [package]
 name = "ymfm-sys"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Rust bindings to the ymfm FM sound chip emulation library"
 license = "BSD-3-Clause"
