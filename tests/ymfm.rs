@@ -76,6 +76,28 @@ fn create_chip_and_generate_samples() {
 }
 
 #[test]
+fn ym2149_uses_distinct_write_and_read_data_ports() {
+    let mut chip = ffi::create_chip(ffi::ChipType::Ym2149, 2_000_000);
+
+    chip.pin_mut().write(0, 0x07);
+    chip.pin_mut().write(1, 0x00);
+    assert_eq!(chip.pin_mut().read(3), 0x00);
+
+    chip.pin_mut().write(2, 0x3f);
+    assert_eq!(chip.pin_mut().read(3), 0x3f);
+}
+
+#[test]
+fn generate_leaves_incomplete_trailing_frame_untouched() {
+    let mut chip = ffi::create_chip(ffi::ChipType::Ym2612, 7_670_000);
+    let mut samples = vec![0x55_i32; 3];
+
+    chip.pin_mut().generate(&mut samples);
+
+    assert_eq!(samples[2], 0x55);
+}
+
+#[test]
 fn all_chip_types_support_basic_lifecycle_operations() {
     let chip_types = [
         ffi::ChipType::Ym2149,
