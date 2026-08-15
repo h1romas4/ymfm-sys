@@ -136,12 +136,19 @@ pub mod ffi {
         /// data buffer.
         fn set_instrument_data(self: Pin<&mut Chip>, data: &[u8]) -> bool;
 
-        /// Write to a register at `offset`, via the ymfm
-        /// `write(offset, data)` (0/1 = address/data port, 2/3 = extended
-        /// address/data port on chips that support it).
+        /// Write to a register or chip port at `offset`, via the upstream
+        /// `write(offset, data)` API. The common mapping is 0/1 for the
+        /// address/data ports. OPN/OPNA chips generally use 2/3 for their
+        /// extended address/data ports; YMF262/YMF289B use 2 for the upper
+        /// address and 3 for regular data; YMF278B uses 4/5 for PCM
+        /// address/data. YM2149 uses 2 for write data. Unsupported offsets
+        /// follow the selected chip's upstream behavior.
         fn write(self: Pin<&mut Chip>, offset: u32, data: u8);
 
-        /// Read from `offset`, via the ymfm `read(offset)` API.
+        /// Read from a chip port at `offset`, via the upstream `read(offset)`
+        /// API. The common mapping is 0 for status and 1 for data; extended
+        /// status/data and chip-specific ports use the offsets defined by the
+        /// selected upstream chip. YM2149 reads its data port at offset 3.
         fn read(self: Pin<&mut Chip>, offset: u32) -> u8;
 
         /// Generate `buffer.len() / channels()` samples at the chip's native

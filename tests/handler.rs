@@ -122,6 +122,10 @@ fn write_reg(mut chip: Pin<&mut ffi::Chip>, reg: u8, data: u8) {
     chip.as_mut().write(1, data);
 }
 
+fn write_port(mut chip: Pin<&mut ffi::Chip>, offset: u32, data: u8) {
+    chip.as_mut().write(offset, data);
+}
+
 #[test]
 fn timer_a_expiry_asserts_irq() {
     let (handler, callback_state) = handler();
@@ -198,4 +202,38 @@ fn busy_callback_is_owned_by_rust() {
         "Rust-owned BUSY state should expire as samples advance"
     );
     assert!(!*callback_state.busy.borrow());
+}
+
+#[test]
+fn ymf278b_extended_and_pcm_ports_follow_upstream_mapping() {
+    let (handler, _callback_state) = handler();
+    let mut chip = ffi::create_chip_with_callbacks(
+        ffi::ChipType::Ymf278B,
+        33_868_800,
+        Box::new(InterfaceCallbacks::new(handler)),
+    );
+
+    // YMF278B enables its PCM port through register 0x105 (NEW2).
+    write_port(chip.pin_mut(), 2, 0x05);
+    write_port(chip.pin_mut(), 3, 0x02);
+
+    // Select PCM memory access mode and address 0x0010 through offsets 4/5.
+    write_port(chip.pin_mut(), 4, 0x02);
+    write_port(chip.pin_mut(), 5, 0x01);
+    write_port(chip.pin_mut(), 4, 0x03);
+    write_port(chip.pin_mut(), 5, 0x00);
+    write_port(chip.pin_mut(), 4, 0x04);
+    write_port(chip.pin_mut(), 5, 0x00);
+    write_port(chip.pin_mut(), 4, 0x05);
+    write_port(chip.pin_mut(), 5, 0x10);
+
+    // Offset 4 selects the PCM data register and offset 5 writes the byte.
+    write_port(chip.pin_mut(), 4, 0x06);
+    write_port(chip.pin_mut(), 5, 0xa5);
+
+    // The PCM data port is readable and advances the external address.
+    write_port(chip.pin_mut(), 4, 0x05);
+    write_port(chip.pin_mut(), 5, 0x10);
+    write_port(chip.pin_mut(), 4, 0x06);
+    assert_eq!(chip.pin_mut().read(5), 0xa5);
 }
