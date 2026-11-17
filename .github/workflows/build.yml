@@ -16,3 +16,35 @@ jobs:
     uses: ./.github/workflows/build-release.yml
     with:
       release: false
+
+  release-sysroot:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Package sysroot
+        shell: bash
+        run: |
+          set -euo pipefail
+          name=wasm32-unknown-unknown-libcxx
+          tar -C components -czf "$RUNNER_TEMP/$name.tar.gz" "$name"
+          (cd components && zip -qr "$RUNNER_TEMP/$name.zip" "$name")
+          (cd "$RUNNER_TEMP" && sha256sum "$name.tar.gz" "$name.zip" > "$name.sha256")
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          name=wasm32-unknown-unknown-libcxx
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
+          fi
+          gh release upload "$TAG" --repo "$GITHUB_REPOSITORY" --clobber \
+            "$RUNNER_TEMP/$name.tar.gz" "$RUNNER_TEMP/$name.zip" "$RUNNER_TEMP/$name.sha256"

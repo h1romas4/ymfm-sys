@@ -120,6 +120,78 @@ The `components/ymfm` directory contains the upstream ymfm source used by the
 build. The C++ implementation is compiled as part of this crate and does not
 need to be installed separately.
 
+### wasm32-unknown-unknown
+
+The bundled sysroot provides libc++ and a subset of libc for this target.
+Install Clang and the Rust target, and configure the C++ flags for `cxx` and
+other dependencies as well as this crate:
+
+```sh
+rustup target add wasm32-unknown-unknown
+export YMFM_WASM_SYSROOT="$PWD/components/wasm32-unknown-unknown-libcxx"
+export CC_SHELL_ESCAPED_FLAGS=1
+export CXXFLAGS_wasm32_unknown_unknown="--sysroot=\"$YMFM_WASM_SYSROOT\" -D__OpenBSD__ -D__WASM32_UNKNOWN_UNKNOWN__"
+cargo build --target wasm32-unknown-unknown --example buildall
+```
+
+For applications using this crate as a dependency, download the sysroot from
+the [release](https://github.com/h1romas4/ymfm-sys/releases) matching the
+`ymfm-sys` version. On Linux or macOS:
+
+```sh
+version=v0.2.0 # Replace with the tag matching your ymfm-sys version.
+base="https://github.com/h1romas4/ymfm-sys/releases/download/$version"
+name=wasm32-unknown-unknown-libcxx
+curl -fLO "$base/$name.tar.gz"
+curl -fLO "$base/$name.sha256"
+grep "  $name.tar.gz$" "$name.sha256" | shasum -a 256 -c -
+tar -xzf "$name.tar.gz"
+export YMFM_WASM_SYSROOT="$PWD/$name"
+export CC_SHELL_ESCAPED_FLAGS=1
+export CXXFLAGS_wasm32_unknown_unknown="--sysroot=\"$YMFM_WASM_SYSROOT\" -D__OpenBSD__ -D__WASM32_UNKNOWN_UNKNOWN__"
+cargo build --target wasm32-unknown-unknown
+```
+
+On Windows (PowerShell), using LLVM's Clang:
+
+```powershell
+$version = "v0.2.0" # Replace with the tag matching your ymfm-sys version.
+$base = "https://github.com/h1romas4/ymfm-sys/releases/download/$version"
+$name = "wasm32-unknown-unknown-libcxx"
+Invoke-WebRequest "$base/$name.zip" -OutFile "$name.zip"
+Invoke-WebRequest "$base/$name.sha256" -OutFile "$name.sha256"
+$line = Get-Content "$name.sha256" | Where-Object { $_ -match "^[0-9a-f]{64}  $name\.zip$" }
+if (-not $line -or (Get-FileHash "$name.zip" -Algorithm SHA256).Hash -ne $line.Substring(0, 64)) {
+    throw "Sysroot archive checksum mismatch"
+}
+Expand-Archive "$name.zip" -DestinationPath .
+$env:YMFM_WASM_SYSROOT = (Resolve-Path $name).Path.Replace('\', '/')
+$env:CC_SHELL_ESCAPED_FLAGS = "1"
+$env:CXXFLAGS_wasm32_unknown_unknown = "--sysroot=`"$env:YMFM_WASM_SYSROOT`" -D__OpenBSD__ -D__WASM32_UNKNOWN_UNKNOWN__"
+cargo build --target wasm32-unknown-unknown
+```
+
+Install the `wasm32-unknown-unknown` Rust target and ensure `clang++` is on
+`PATH` before building.
+
+The crate supplies global `malloc`, `aligned_alloc`, and `free` symbols for
+this target; they must not be provided again by the application, and the Rust
+global allocator must not call these symbols (which would recurse).
+
+Since bare WebAssembly has no stderr or process, failed C++ assertions and fatal runtime
+errors trap without printing a diagnostic. C++ exceptions are not enabled by
+these build instructions.
+
+The wasm smoke test can be linked and run with Node.js:
+
+```sh
+CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER="node tests/run_wasm.cjs" \
+  cargo test --target wasm32-unknown-unknown --test wasm_runtime
+```
+
+CI also runs this test in release mode and executes the all-chip example on
+Linux, Windows, and macOS using Clang.
+
 ### wasm32-wasip1
 
 Install the Rust target and the [WASI SDK](https://github.com/WebAssembly/wasi-sdk/releases),
@@ -142,7 +214,6 @@ cargo build --target wasm32-wasip1
 
 ### Unsupported targets
 
-- `wasm32-unknown-unknown` (see [`wasm32-unknown-unknown-libcxx`](https://github.com/maximmaxim345/wasm32-unknown-unknown-libcxx))
 - `wasm32-wasip2` (Component Model support is not available yet)
 
 ## Upstream

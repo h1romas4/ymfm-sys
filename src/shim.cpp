@@ -8,7 +8,6 @@
 #include "ymfm_opq.h"
 #include "ymfm_opz.h"
 
-#include <cstdio>
 #include <cstdlib>
 #include <vector>
 
@@ -226,7 +225,6 @@ std::unique_ptr<Chip> create_chip_with_callbacks(ChipType type, std::uint32_t cl
 		case ChipType::Ds1001:  return std::make_unique<ChipImpl<ymfm::ds1001>>(clock, ChipType::Ds1001, std::move(callbacks));
 		case ChipType::Ym2414:  return std::make_unique<ChipImpl<ymfm::ym2414>>(clock, ChipType::Ym2414, std::move(callbacks));
 		default:
-			std::fprintf(stderr, "ymfm-sys: unsupported chip type (%d)\n", static_cast<int>(type));
 			std::abort();
 	}
 }

@@ -34,5 +34,5 @@ files were omitted to keep the crate smaller.
 - `licenses/`: license texts shipped with the upstream release
 
 These are prebuilt files for `wasm32-unknown-unknown`; they are not host
-libraries. Cargo build-script and linker configuration must select this
-sysroot when building for that target.
+libraries. See the crate's main README for the required C++ compiler flags.
+The crate's build script selects the sysroot and libraries for its own code.

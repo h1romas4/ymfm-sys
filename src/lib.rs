@@ -4,6 +4,13 @@ use cxx::UniquePtr;
 
 mod callback;
 
+#[cfg(all(
+    target_arch = "wasm32",
+    target_os = "unknown",
+    target_vendor = "unknown"
+))]
+mod wasm;
+
 pub use callback::{InterfaceCallbacks, InterfaceHandler};
 pub(crate) use callback::{
     advance_clock, default_callbacks, read_data, write_data, ymfm_external_read,

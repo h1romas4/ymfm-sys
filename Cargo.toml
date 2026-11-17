@@ -24,3 +24,7 @@ cxx = "1"
 [build-dependencies]
 cc = "1.4.2"
 cxx-build = "1.0.198"
+
+[[test]]
+name = "wasm_runtime"
+harness = false

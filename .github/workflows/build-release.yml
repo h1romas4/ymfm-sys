@@ -132,3 +132,77 @@ jobs:
             throw "Expected example executable was not found: $path"
           }
           Get-Item $path | Select-Object FullName, Length, LastWriteTime
+
+  wasm32-unknown-unknown:
+    name: Build and test (wasm32-unknown-unknown, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-26.04, windows-2025, macos-15]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Clang (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang
+
+      - name: Install Rust target
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --no-self-update
+          rustup default "$RUST_TOOLCHAIN"
+          rustup target add wasm32-unknown-unknown --toolchain "$RUST_TOOLCHAIN"
+
+      - name: Configure Clang and C++ sysroot
+        run: |
+          case "$RUNNER_OS" in
+            Linux)
+              cc="$(command -v clang)"
+              cxx="$(command -v clang++)"
+              sysroot="$GITHUB_WORKSPACE/components/wasm32-unknown-unknown-libcxx"
+              ;;
+            macOS)
+              llvm_bin="$(brew --prefix llvm@18)/bin"
+              cc="$llvm_bin/clang"
+              cxx="$llvm_bin/clang++"
+              sysroot="$GITHUB_WORKSPACE/components/wasm32-unknown-unknown-libcxx"
+              ;;
+            Windows)
+              llvm_bin="C:/Program Files/LLVM/bin"
+              cc="$llvm_bin/clang.exe"
+              cxx="$llvm_bin/clang++.exe"
+              sysroot="$(cygpath -m "$GITHUB_WORKSPACE")/components/wasm32-unknown-unknown-libcxx"
+              ;;
+            *) echo "Unsupported runner OS: $RUNNER_OS" >&2; exit 1 ;;
+          esac
+          "$cc" --version
+          "$cxx" --print-targets | grep -q wasm32
+          echo "CC_wasm32_unknown_unknown=$cc" >> "$GITHUB_ENV"
+          echo "CXX_wasm32_unknown_unknown=$cxx" >> "$GITHUB_ENV"
+          echo "CC_SHELL_ESCAPED_FLAGS=1" >> "$GITHUB_ENV"
+          echo "CXXFLAGS_wasm32_unknown_unknown=--sysroot=\"$sysroot\" -D__OpenBSD__ -D__WASM32_UNKNOWN_UNKNOWN__" >> "$GITHUB_ENV"
+          echo "CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER=node tests/run_wasm.cjs" >> "$GITHUB_ENV"
+
+      - name: Test Wasm runtime
+        run: |
+          cargo test --target wasm32-unknown-unknown --test wasm_runtime
+          cargo test --release --target wasm32-unknown-unknown --test wasm_runtime
+
+      - name: Build all targets
+        run: cargo build --release --target wasm32-unknown-unknown --all-targets
+
+      - name: Run all-chip example
+        run: |
+          node -e 'const fs = require("node:fs"); const assert = require("node:assert/strict"); const wasm = new WebAssembly.Module(fs.readFileSync(process.argv[1])); assert.equal(new WebAssembly.Instance(wasm, {}).exports.main(), 0);' \
+            target/wasm32-unknown-unknown/release/examples/buildall.wasm
