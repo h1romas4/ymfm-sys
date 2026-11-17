@@ -25,6 +25,10 @@ cxx = "1"
 cc = "1.4.2"
 cxx-build = "1.0.198"
 
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown", target_vendor = "unknown"))'.dev-dependencies]
+js-sys = "0.3"
+wasm-bindgen = "=0.2.130"
+
 [[test]]
 name = "wasm_runtime"
 harness = false

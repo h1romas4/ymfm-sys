@@ -192,6 +192,27 @@ CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER="node tests/run_wasm.cjs" \
 CI also runs this test in release mode and executes the all-chip example on
 Linux, Windows, and macOS using Clang.
 
+#### externref example
+
+[`wasm_externref.rs`](examples/wasm_externref.rs) demonstrates JavaScript
+instance references using `wasm-bindgen` and Wasm `externref` (not a C ABI).
+After setting the compiler flags above, build and run it with Node.js:
+
+```sh
+cargo install wasm-bindgen-cli --version 0.2.130 --locked
+RUSTFLAGS="-C target-feature=+reference-types" \
+  cargo build --release --target wasm32-unknown-unknown --example wasm_externref
+wasm-bindgen --debug --target nodejs --out-dir target/wasm-externref \
+  target/wasm32-unknown-unknown/release/examples/wasm_externref.wasm
+node examples/wasm_externref.cjs target/wasm-externref/wasm_externref.js
+```
+
+See [`wasm_externref.cjs`](examples/wasm_externref.cjs) for usage and error
+handling. Call `ymfm_destroy` to release each instance. Generated audio resides
+in Wasm memory until the next generation or destruction of that instance;
+recreate JavaScript typed-array views after memory growth. `--debug` exposes
+the raw Wasm exports for the example's reference-type check.
+
 ### wasm32-wasip1
 
 Install the Rust target and the [WASI SDK](https://github.com/WebAssembly/wasi-sdk/releases),
