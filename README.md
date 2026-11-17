@@ -1,6 +1,6 @@
 # ymfm-sys
 
-[![Build](https://github.com/h1romas4/ymfm-sys/actions/workflows/build.yml/badge.svg?branch=v0.2.0)](https://github.com/h1romas4/ymfm-sys/actions/workflows/build.yml?query=branch%3Av0.2.0)
+[![Build](https://github.com/h1romas4/ymfm-sys/actions/workflows/build.yml/badge.svg?branch=v0.3.0)](https://github.com/h1romas4/ymfm-sys/actions/workflows/build.yml?query=branch%3Av0.3.0)
 [![Crates.io](https://img.shields.io/crates/v/ymfm-sys.svg)](https://crates.io/crates/ymfm-sys)
 
 Rust bindings to [ymfm](https://github.com/aaronsgiles/ymfm), by Aaron Giles-san
@@ -139,7 +139,7 @@ the [release](https://github.com/h1romas4/ymfm-sys/releases) matching the
 `ymfm-sys` version. On Linux or macOS:
 
 ```sh
-version=v0.2.0 # Replace with the tag matching your ymfm-sys version.
+version=v0.3.0 # Replace with the tag matching your ymfm-sys version.
 base="https://github.com/h1romas4/ymfm-sys/releases/download/$version"
 name=wasm32-unknown-unknown-libcxx
 curl -fLO "$base/$name.tar.gz"
@@ -155,7 +155,7 @@ cargo build --target wasm32-unknown-unknown
 On Windows (PowerShell), using LLVM's Clang:
 
 ```powershell
-$version = "v0.2.0" # Replace with the tag matching your ymfm-sys version.
+$version = "v0.3.0" # Replace with the tag matching your ymfm-sys version.
 $base = "https://github.com/h1romas4/ymfm-sys/releases/download/$version"
 $name = "wasm32-unknown-unknown-libcxx"
 Invoke-WebRequest "$base/$name.zip" -OutFile "$name.zip"

@@ -2,8 +2,12 @@
 
 ## [Unreleased]
 
-- [ ] Support the `wasm32-unknown-unknown`([`wasm32-unknown-unknown-libcxx`](https://github.com/maximmaxim345/wasm32-unknown-unknown-libcxx)) target.
 - [ ] Support the `wasm32-wasip2` (Component Model) target.
+
+## [0.3.0]
+
+- Support `wasm32-unknown-unknown` with a bundled libc++ sysroot and runtime.
+- Add cross-platform Wasm CI and an `externref` example.
 
 ## [0.2.0] - 2026-08-15
 
